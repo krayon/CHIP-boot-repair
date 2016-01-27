@@ -5,19 +5,23 @@
 
 const std::string DESCRIPTION = "This tool will repair issues related to the NAND memory on C.H.I.P.\n The whole process takes just a few seconds.";
 void GtkRepairView::onNotify(const std::string & progressText, float progressFraction, const std::string * details) {
+	gdk_threads_enter();
 	gtk_progress_bar_set_text (GTK_PROGRESS_BAR(progbar), progressText.c_str());
 	gtk_progress_bar_set_fraction (GTK_PROGRESS_BAR(progbar),progressFraction);
 	std::string labelText = details ? *details : "";
 	gtk_label_set_text(GTK_LABEL(label), labelText.c_str());
+	gdk_threads_leave();
 }
 
 //static
 void * GtkRepairView::waitForFel(void * thisObj) {
+	gdk_threads_enter();
 	GtkRepairView * view = (GtkRepairView *)thisObj;
 	RepairTool::staticWaitForFel(view);
 	const std::string message = "Click Repair to begin";
-	view->onNotify("C.H.I.P. in FEL mode found",0.05, &message);
 	gtk_widget_set_sensitive(view->button, TRUE);
+	gdk_threads_leave();
+	view->onNotify("C.H.I.P. in FEL mode found",0.05, &message);
 	return view->button;
 }
 
@@ -25,11 +29,9 @@ void * GtkRepairView::waitForFel(void * thisObj) {
 void * GtkRepairView::repair(void * thisObj) {
 	GtkRepairView * view = (GtkRepairView *)thisObj;
 	RepairTool::runSimple(view,false);
-// The line below leads to a usb bulk send error because the connected device is invalid. The error is probably benign, but commenting out anyway.
-//	auto thread = g_thread_new("waitForFel", GtkRepairView::waitForFel, view); // start again!
 	return nullptr;
-//	gtk_widget_set_sensitive(view->button, true);
 }
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-parameter"
 void GtkRepairView::repairThread(GtkWidget * widget,void * thisObj) {
@@ -41,33 +43,33 @@ void GtkRepairView::repairThread(GtkWidget * widget,void * thisObj) {
 
 
 GtkRepairView::GtkRepairView(int argc, char *argv[]) {
-//	/* Obtain gtk's global lock */
-//	gdk_threads_enter();
+
+	gdk_threads_init();
 
 	gtk_init(&argc, &argv);
-  
-  uid_t uid=getuid(), euid=geteuid();
-  if (uid!=0 || uid!=euid) {
-    GtkWidget *dialog;
-    dialog = gtk_message_dialog_new(NULL,
-              GTK_DIALOG_DESTROY_WITH_PARENT,
-              GTK_MESSAGE_ERROR,
-              GTK_BUTTONS_OK,
-              "You need to be root to run the C.H.I.P repair tool");
-    gtk_window_set_title(GTK_WINDOW(dialog), "Error");
-    gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-    exit(1);
-  }
 
-  window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
+	uid_t uid=getuid(), euid=geteuid();
+	if (uid!=0 || uid!=euid) {
+		GtkWidget *dialog;
+		dialog = gtk_message_dialog_new(NULL,
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_ERROR,
+				GTK_BUTTONS_OK,
+				"You need to be root to run the C.H.I.P repair tool");
+		gtk_window_set_title(GTK_WINDOW(dialog), "Error");
+		gtk_dialog_run(GTK_DIALOG(dialog));
+		gtk_widget_destroy(dialog);
+		exit(1);
+	}
+
+	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER);
 	gtk_window_set_default_size(GTK_WINDOW(window), 400, 150);
 	gtk_window_set_title(GTK_WINDOW(window), "C.H.I.P. Boot Repair");
 	gtk_container_set_border_width(GTK_CONTAINER(window), 10);
 
 	g_signal_connect(G_OBJECT(window), "destroy",
-		G_CALLBACK(gtk_main_quit), G_OBJECT(window));
+			G_CALLBACK(gtk_main_quit), G_OBJECT(window));
 
 	vbox = gtk_vbox_new(TRUE, 5);
 
@@ -75,7 +77,7 @@ GtkRepairView::GtkRepairView(int argc, char *argv[]) {
 
 	progbar = gtk_progress_bar_new();
 	gtk_progress_bar_set_text (GTK_PROGRESS_BAR(progbar),
-		"Waiting for a C.H.I.P. in FEL mode...");
+			"Waiting for a C.H.I.P. in FEL mode...");
 
 	gtk_box_pack_start(GTK_BOX(vbox), progbar, FALSE, FALSE, 0);
 	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
@@ -93,7 +95,7 @@ GtkRepairView::GtkRepairView(int argc, char *argv[]) {
 	gtk_container_add(GTK_CONTAINER(hbox), button);
 
 	g_signal_connect(button, "clicked",
-		G_CALLBACK(GtkRepairView::repairThread), this);
+			G_CALLBACK(GtkRepairView::repairThread), this);
 
 	halign = gtk_alignment_new(1,0,0,0);
 	gtk_container_add(GTK_CONTAINER(halign), hbox);
@@ -101,7 +103,7 @@ GtkRepairView::GtkRepairView(int argc, char *argv[]) {
 	gtk_box_pack_start(GTK_BOX(vbox), halign, FALSE, FALSE, 0);
 
 
- /* Create new thread */
+	/* Create new thread */
 	auto thread = g_thread_new("waitForFel", GtkRepairView::waitForFel, this);
 
 	if( ! thread )
@@ -112,10 +114,7 @@ GtkRepairView::GtkRepairView(int argc, char *argv[]) {
 
 	gtk_widget_show_all(window);
 
-    gtk_main();
-
-	/* Release gtk's global lock */
-	gdk_threads_leave();
+	gtk_main();
 
 }
 
