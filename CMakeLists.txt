@@ -69,5 +69,6 @@ INSTALL(FILES "${CMAKE_CURRENT_BINARY_DIR}/changelog.gz"
 INSTALL( FILES "${CMAKE_CURRENT_SOURCE_DIR}/assets/chip-boot-repair.desktop" DESTINATION share/applications )
 INSTALL( PROGRAMS "${CMAKE_CURRENT_SOURCE_DIR}/assets/chip-boot-repair-pkexec" DESTINATION bin )
 INSTALL( FILES "${CMAKE_CURRENT_SOURCE_DIR}/assets/com.ubuntu.pkexec.chip-boot-repair.policy" DESTINATION share/polkit-1/actions )
+INSTALL( FILES "${CMAKE_CURRENT_SOURCE_DIR}/assets/chip-boot-repair.svg" DESTINATION share/icons/hicolor/scalable/apps )
 
 INCLUDE( CPack )
