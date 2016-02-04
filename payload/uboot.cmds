@@ -1,0 +1,20 @@
+nand erase 0x0 0x1000000
+echo nand write.raw.noverify 0x43000000 0x0 0x000000c4
+nand write.raw.noverify 0x43000000 0x0 0x000000c4
+echo nand write.raw.noverify 0x43000000 0x400000 0x000000c4
+nand write.raw.noverify 0x43000000 0x400000 0x000000c4
+nand write 0x4a000000 0x800000 0x400000
+setenv bootargs root=ubi0:rootfs rootfstype=ubifs rw earlyprintk ubi.mtd=4
+setenv bootcmd 'if test -n ${fel_booted} && test -n ${scriptaddr}; then echo '(FEL boot)'; source ${scriptaddr}; fi; mtdparts; ubi part UBI; ubifsmount ubi0:rootfs; ubifsload $fdt_addr_r /boot/sun5i-r8-chip.dtb; ubifsload $kernel_addr_r /boot/zImage; bootz $kernel_addr_r - $fdt_addr_r'
+setenv fel_booted 0
+echo Enabling Splash
+setenv stdout serial
+setenv stderr serial
+setenv splashpos m,m
+setenv video-mode sunxi:640x480-24@60,monitor=composite-ntsc,overscan_x=40,overscan_y=20
+saveenv
+mw ${scriptaddr} 0x0
+echo 
+echo *****************[ FLASHING DONE ]*****************
+echo 
+while true; do; sleep 10; done;
