@@ -65,7 +65,7 @@ const std::string filePrefix() {
 
 Strings fel_ver = { "./fel", "ver"};
 Strings fel_spl = { "./fel", "spl", "PREFIXsunxi-spl.bin"};
-Strings fel_write_spl = { "./fel", "write", "0x43000000", "PREFIXsunxi-spl-with-ecc.bin" };
+Strings fel_write_spl = { "./fel", "write", "0x43200000", "PREFIXsunxi-spl-with-ecc.bin" };
 Strings fel_write_uboot = { "./fel", "write", "0x4a000000", "PREFIXpadded-uboot" };
 Strings fel_write_uboot_script = { "./fel", "write", "0x43100000", "PREFIXuboot.scr" };
 Strings fel_execute = { "./fel", "exe", "0x4a000000" };
