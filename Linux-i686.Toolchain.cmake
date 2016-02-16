@@ -8,3 +8,4 @@ set(CMAKE_C_FLAGS               "-march=i686 -m32 -msse3 -mfpmath=sse" CACHE STR
 set(CMAKE_CXX_FLAGS             "-march=i686 -m32 -msse3 -mfpmath=sse" CACHE STRING "")
 set(CMAKE_C_FLAGS_RELEASE       "-Ofast -flto" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELEASE     "-Ofast -flto" CACHE STRING "")
+set( CPACK_DEBIAN_PACKAGE_ARCHITECTURE "i386" )
